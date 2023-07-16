@@ -1,5 +1,12 @@
 #include "Grid.h"
 
+void Grid::clear() {
+	int size = this->width * this->height;
+	for (int i = 0; i < size; i++) {
+		this->cells[i].kill();
+	}
+}
+
 void Grid::populate_grid() {
 	srand(unsigned(time(NULL)));
 	int size = this->cells.size();
@@ -12,7 +19,7 @@ void Grid::populate_grid() {
 	}
 }
 
-bool Grid::will_survive(int x, int y) {
+bool Grid::will_survive(int x, int y) const {
 	if (x == 0 || x >= width - 1 || y == 0 || y >= height -1)
 		return false;
 	int neighbor_score = 0;
@@ -31,7 +38,7 @@ bool Grid::will_survive(int x, int y) {
 	return false;
 }
 
-bool Grid::will_be_created(int x, int y) {
+bool Grid::will_be_created(int x, int y) const {
 	if (x == 0 || x >= width - 1 || y == 0 || y >= height - 1)
 		return false;
 	int neighbor_score = 0;
@@ -54,9 +61,9 @@ void Grid::update(const Grid& next) {
 	}
 }
 
-void calculate(Grid& old_generation, Grid& new_generation) {
-	for (int y = 1; y < old_generation.height; y++) {
-		for (int x = 1; x < old_generation.width; x++) {
+void calculate(const Grid& old_generation, Grid& new_generation) {
+	for (int y = 0; y < old_generation.height; y++) {
+		for (int x = 0; x < old_generation.width; x++) {
 			if (old_generation.cells.at(x + old_generation.width * y).status()) {
 				if (old_generation.will_survive(x, y))
 					new_generation.cells.at(x + new_generation.width * y).create();

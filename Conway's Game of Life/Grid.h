@@ -13,13 +13,15 @@ public:
 		cells.resize(n);
 	}
 
+	void clear();
+
 	void populate_grid();
 
-	bool will_survive(int x, int y);
+	bool will_survive(int x, int y) const;
 
-	bool will_be_created(int x, int y);
+	bool will_be_created(int x, int y) const;
 
 	void update(const Grid& next);
 };
 
-void calculate(Grid& old_generation, Grid& new_generation);
+void calculate(const Grid& old_generation, Grid& new_generation);

@@ -17,10 +17,10 @@ const int gridSize = gridHeight * gridWidth;
 int brushSize = 1;
 
 void prepare_grid(sf::VertexArray& grid);
-void set_grid_color(sf::VertexArray& display_grid, Grid& info_grid);
-void user_paints_grid(sf::Vector2i& mouse_pos, Grid& grid, int brushSize, bool kill);
-void brush2(sf::Vector2i& pos, Grid& grid, bool kill);
-void brush3(sf::Vector2i& pos, Grid& grid, bool kill);
+void set_grid_color(sf::VertexArray& display_grid, const Grid& info_grid);
+void user_paints_grid(sf::Vector2i& mouse_pos, Grid& grid, const int brushSize, const bool kill);
+void brush2(sf::Vector2i& pos, Grid& grid, const bool kill);
+void brush3(sf::Vector2i& pos, Grid& grid, const bool kill);
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Conway's Game of Life");
@@ -80,6 +80,9 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num3)) {
                 brushSize = 3;
             }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::C)) {
+                new_grid.clear();
+            }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
                 new_grid.populate_grid();
             }
@@ -126,7 +129,7 @@ void prepare_grid(sf::VertexArray &grid) {
     }
 }
 
-void set_grid_color(sf::VertexArray &display_grid, Grid& info_grid) {
+void set_grid_color(sf::VertexArray &display_grid, const Grid& info_grid) {
     uint8_t opaqueness = 0;
     for (int i = 0; i < gridSize; i++) {
         if (info_grid.cells[i].status())
@@ -142,7 +145,7 @@ void set_grid_color(sf::VertexArray &display_grid, Grid& info_grid) {
     }
 }
 
-void user_paints_grid(sf::Vector2i& mouse_pos, Grid& grid, int brushSize, bool kill) {
+void user_paints_grid(sf::Vector2i& mouse_pos, Grid& grid, const int brushSize, const bool kill) {
     mouse_pos.x /= pixelRatio;
     mouse_pos.y /= pixelRatio;
     switch (brushSize) {
@@ -163,7 +166,7 @@ void user_paints_grid(sf::Vector2i& mouse_pos, Grid& grid, int brushSize, bool k
     }
 }
 
-void brush2(sf::Vector2i &pos, Grid& grid, bool kill) {
+void brush2(sf::Vector2i &pos, Grid& grid, const bool kill) {
      sf::Vector2i tiles[] = {{pos.x, pos.y - 1},
          {pos.x - 1, pos.y}, {pos.x, pos.y    }, {pos.x + 1, pos.y},
                              {pos.x, pos.y + 1}};
@@ -177,7 +180,7 @@ void brush2(sf::Vector2i &pos, Grid& grid, bool kill) {
      }
 }
 
-void brush3(sf::Vector2i& pos, Grid& grid, bool kill) {
+void brush3(sf::Vector2i& pos, Grid& grid, const bool kill) {
     /*
     - - X - - <-- brush on grid example
     - X X X -
