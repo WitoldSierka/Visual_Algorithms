@@ -1,0 +1,11 @@
+Font file is necessary for this program to work.
+Controls:
+Left Mouse Button - create new cells
+Right Mouse Button - kill cells
+Changes you make will be evaluated with normal rules at next generation.
+"+" - speed up the simulation
+"-"  - slow down the simulation
+Time between generations (frames) will be displayed at top left corner. At time of 2 seconds the simulation will stop (it can be resumed)
+"1", "2", "3" - change brush sizes affecting mouse behaviour.
+"R" - randomly repopulate the grid
+"C" - clear the grid.
