@@ -14,6 +14,7 @@ int startX = screenWidth / 2.0; // snake starts at the middle of the map
 int startY = screenHeight / 2.0;
 
 void snakeBody(const std::pair<int, int> &a, std::pair<int, int> &b);
+bool isTimeToMove(std::chrono::system_clock::time_point t, int direction, int timestamp);
 
 int main() {
 	// Create Screen Buffer
@@ -33,6 +34,8 @@ int main() {
 		int score = 0;
 		int foodY = startY;
 		int foodX = screenWidth / 4.0;
+		int timestamp = 30;
+		std::vector<std::pair<int, int>> obstacles = { };
 		std::deque<std::pair<int, int>> snake = {	{startX, startY}, 
 													{startX+1, startY}, 
 													{startX+2, startY},
@@ -41,10 +44,8 @@ int main() {
 		
 		while (!gameOver) {
 			//game input and timing
-			int timestamp = 15;
 			auto t1 = std::chrono::system_clock::now();
-			while ((std::chrono::system_clock::now() - t1) < ((direction % 2 == 0) ? std::chrono::milliseconds(5 * timestamp) : 
-																						std::chrono::milliseconds(8 * timestamp))) {
+			while (isTimeToMove(t1, direction, timestamp)) {
 				keyRight = (0x8000 & GetAsyncKeyState((unsigned char)('\x27'))) != 0;
 				keyLeft = (0x8000 & GetAsyncKeyState((unsigned char)('\x25'))) != 0;
 				if (keyRight && !keyRightOld) {
@@ -74,7 +75,6 @@ int main() {
 			}
 
 			//rope simulation
-			int index = 0;
 			for (std::deque<std::pair<int, int>>::iterator it = snake.begin(); it != snake.end()-1; ++it) {
 				snakeBody(*it, *(it + 1));
 			}
@@ -84,6 +84,11 @@ int main() {
 			if (snake.front().first < 0 || snake.front().first >= screenWidth || snake.front().second < 3 || snake.front().second >= screenHeight) {
 				snake.pop_front();
 				gameOver = true;
+			}
+
+			//obstacle collision
+			for (const std::pair<int, int>& obs : obstacles) {
+				if (snake.front().first == obs.first && snake.front().second == obs.second) gameOver = true;
 			}
 
 			//snake collision
@@ -99,9 +104,13 @@ int main() {
 				foodX = rand() % screenWidth;
 				foodY = (rand() % (screenHeight - 3)) + 3;
 				score++;
-				if (score % 5 == 0) {
-					timestamp -= 5;
-					if (timestamp < 1) timestamp == 0;
+				timestamp--;
+				if (timestamp < 1) 
+					timestamp == 1;
+				if (!(score % 3)) {
+					int obsX = rand() % screenWidth;
+					int obsY = (rand() % (screenHeight - 3)) + 3;
+					obstacles.emplace_back(obsX, obsY);
 				}
 			}
 			if (foodEaten) snake.push_back({snake.back().first, snake.back().second});
@@ -126,15 +135,29 @@ int main() {
 			//food
 			screen[foodY * screenWidth + foodX] = L'A';
 
+			// display obstacles
+			for (const std::pair<int, int>& obs : obstacles) {
+				screen[obs.second * screenWidth + obs.first] = L'#';
+			}
+
 			// game over screen
-			if (gameOver) wsprintf(&screen[(screenHeight / 2 - 1) * screenWidth + 40], L"    PRESS 'SPACE' TO PLAY AGAIN    ");
+			if (gameOver) {
+				wsprintf(&screen[(screenHeight / 2 - 1) * screenWidth + 40], L"    PRESS 'SPACE' TO PLAY AGAIN    ");
+				wsprintf(&screen[(screenHeight / 2    ) * screenWidth + 40], L"    PRESS 'Q' TO CLOSE THE GAME    ");
+			}
 
 			//Display frame
 			WriteConsoleOutputCharacter(hConsole, screen.data(), screenSize, {0, 0}, &dwBytesWritten);
 		}
-
 		//Wait for space to reset
-		while ((0x8000 & GetAsyncKeyState((unsigned char)('\x20'))) == 0);
+ 		while (gameOver) {
+			if (0x8000 & GetAsyncKeyState((unsigned char)('\x20'))) {
+				gameOver = false;
+			} else if (0x8000 & GetAsyncKeyState((unsigned char)('\x51'))) { // Q key
+				quit = true;
+				break;
+			}
+		}
 	}
     return 0;
 }
@@ -152,4 +175,14 @@ void snakeBody(const std::pair<int, int> &a, std::pair<int, int> &b) {
 			b.second--;
 		}
 	}
+}
+
+bool isTimeToMove(std::chrono::system_clock::time_point t, int direction, int timestamp) {
+	std::chrono::milliseconds time_amount;
+	//if snake is moving vertically time difference must be accounted for, since font tiles are not square
+	if (direction & 1)
+		time_amount = std::chrono::milliseconds(4 * timestamp);
+	else
+		time_amount = std::chrono::milliseconds(static_cast<int>(2.5 * timestamp));
+	return (std::chrono::system_clock::now() - t) < time_amount;
 }
